@@ -1,0 +1,55 @@
+/* Small supplemental rules; layout/typography is mostly Tailwind utility classes in index.html */
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+code, pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+/* Condition selector pill buttons */
+.cond-btn {
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.cond-btn[aria-pressed="true"] {
+  background-color: #111827;
+  color: #fff;
+  border-color: #111827;
+}
+
+/* Filmstrip */
+.filmstrip-frame {
+  transition: opacity .15s ease;
+}
+
+/* Diagram nodes */
+.diagram-node {
+  border: 1px solid #d4d4d8;
+  background: #fff;
+}
+.diagram-arrow {
+  color: #a3a3a3;
+}
+
+/* Table styling for reproduced paper results */
+.paper-table th, .paper-table td {
+  border-bottom: 1px solid #e5e5e5;
+  padding: .5rem .75rem;
+  text-align: right;
+  white-space: nowrap;
+}
+.paper-table th:first-child, .paper-table td:first-child,
+.paper-table th:nth-child(2), .paper-table td:nth-child(2) {
+  text-align: left;
+}
+.paper-table thead th {
+  font-weight: 600;
+  color: #52525b;
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.paper-table tbody tr:hover { background: #fafafa; }

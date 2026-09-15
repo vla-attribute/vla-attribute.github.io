@@ -1,0 +1,162 @@
+{
+  "conditions": [
+    {
+      "condition": "nominal",
+      "label": "Nominal",
+      "n": 25,
+      "success": 24,
+      "fail": 1,
+      "success_rate": 0.96,
+      "failure_rate": 0.04
+    },
+    {
+      "condition": "light",
+      "label": "Low light",
+      "n": 25,
+      "success": 0,
+      "fail": 25,
+      "success_rate": 0.0,
+      "failure_rate": 1.0
+    },
+    {
+      "condition": "object_add",
+      "label": "Distractor object",
+      "n": 25,
+      "success": 23,
+      "fail": 2,
+      "success_rate": 0.92,
+      "failure_rate": 0.08
+    },
+    {
+      "condition": "blur",
+      "label": "Gaussian blur",
+      "n": 25,
+      "success": 18,
+      "fail": 7,
+      "success_rate": 0.72,
+      "failure_rate": 0.28
+    },
+    {
+      "condition": "fog",
+      "label": "Fog",
+      "n": 25,
+      "success": 10,
+      "fail": 15,
+      "success_rate": 0.4,
+      "failure_rate": 0.6
+    },
+    {
+      "condition": "blur+fog",
+      "label": "Blur + fog (co-occurring)",
+      "n": 25,
+      "success": 2,
+      "fail": 23,
+      "success_rate": 0.08,
+      "failure_rate": 0.92
+    }
+  ],
+  "curated_episodes": [
+    {
+      "episode": "ep_000000",
+      "condition": "nominal",
+      "outcome": "success",
+      "video": "static/videos/ep_000000.mp4",
+      "poster": "static/images/ep_000000.jpg",
+      "caption": "Nominal \u2014 clean external camera view"
+    },
+    {
+      "episode": "ep_000016",
+      "condition": "nominal",
+      "outcome": "fail",
+      "video": "static/videos/ep_000016.mp4",
+      "poster": "static/images/ep_000016.jpg",
+      "caption": "Nominal \u2014 rare task-difficulty failure (no corruption present)"
+    },
+    {
+      "episode": "ep_000028",
+      "condition": "blur",
+      "outcome": "success",
+      "video": "static/videos/ep_000028.mp4",
+      "poster": "static/images/ep_000028.jpg",
+      "caption": "Gaussian blur \u2014 succeeds"
+    },
+    {
+      "episode": "ep_000029",
+      "condition": "blur",
+      "outcome": "fail",
+      "video": "static/videos/ep_000029.mp4",
+      "poster": "static/images/ep_000029.jpg",
+      "caption": "Gaussian blur \u2014 fails"
+    },
+    {
+      "episode": "ep_000054",
+      "condition": "fog",
+      "outcome": "success",
+      "video": "static/videos/ep_000054.mp4",
+      "poster": "static/images/ep_000054.jpg",
+      "caption": "Fog \u2014 succeeds"
+    },
+    {
+      "episode": "ep_000053",
+      "condition": "fog",
+      "outcome": "fail",
+      "video": "static/videos/ep_000053.mp4",
+      "poster": "static/images/ep_000053.jpg",
+      "caption": "Fog \u2014 fails"
+    },
+    {
+      "episode": "ep_000078",
+      "condition": "object_add",
+      "outcome": "success",
+      "video": "static/videos/ep_000078.mp4",
+      "poster": "static/images/ep_000078.jpg",
+      "caption": "Distractor object \u2014 succeeds"
+    },
+    {
+      "episode": "ep_000081",
+      "condition": "object_add",
+      "outcome": "fail",
+      "video": "static/videos/ep_000081.mp4",
+      "poster": "static/images/ep_000081.jpg",
+      "caption": "Distractor object \u2014 fails"
+    },
+    {
+      "episode": "ep_000103",
+      "condition": "light",
+      "outcome": "fail",
+      "video": "static/videos/ep_000103.mp4",
+      "poster": "static/images/ep_000103.jpg",
+      "caption": "Low light \u2014 fails (typical: 0/25 succeeded)"
+    },
+    {
+      "episode": "ep_000104",
+      "condition": "light",
+      "outcome": "fail",
+      "video": "static/videos/ep_000104.mp4",
+      "poster": "static/images/ep_000104.jpg",
+      "caption": "Low light \u2014 fails (typical: 0/25 succeeded)"
+    },
+    {
+      "episode": "ep_000136",
+      "condition": "blur+fog",
+      "outcome": "success",
+      "video": "static/videos/ep_000136.mp4",
+      "poster": "static/images/ep_000136.jpg",
+      "caption": "Blur + fog \u2014 rare success (2/25)"
+    },
+    {
+      "episode": "ep_000128",
+      "condition": "blur+fog",
+      "outcome": "fail",
+      "video": "static/videos/ep_000128.mp4",
+      "poster": "static/images/ep_000128.jpg",
+      "caption": "Blur + fog \u2014 fails (typical: 23/25 failed)"
+    }
+  ],
+  "meta": {
+    "platform": "Hardware: Franka Emika Panda + DROID, \u03c0-0.5 policy",
+    "task": "put the cube in the bowl",
+    "n_total_episodes": 150,
+    "n_per_condition": 25
+  }
+}

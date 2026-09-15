@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Counterfactual Attribution of VLA Failures to Visual Corruptions</title>
+  <meta name="description" content="Attributing vision-language-action policy failures to the specific visual corruptions responsible, via counterfactual latent zeroing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="static/css/index.css" />
+</head>
+<body class="bg-neutral-50 text-neutral-900">
+
+  <!-- Sticky nav -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-neutral-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <a href="#top" class="font-semibold">Counterfactual Corruption Attribution</a>
+      <nav class="hidden md:flex gap-5 text-sm">
+        <a href="#explorer" class="hover:underline">Explorer</a>
+        <a href="#attribution" class="hover:underline">Attribution</a>
+        <a href="#rollout" class="hover:underline">Rollout</a>
+        <a href="#results" class="hover:underline">Results</a>
+        <a href="#videos" class="hover:underline">Videos</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section id="top" class="relative">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="py-12 md:py-20 text-center">
+        <h1 class="mt-3 text-3xl sm:text-4xl md:text-5xl font-extrabold max-w-4xl mx-auto leading-tight">
+          Counterfactual Attribution of Vision&#8209;Language&#8209;Action Model Failures to Visual Corruptions
+        </h1>
+        <p class="mt-4 text-lg text-neutral-600 max-w-3xl mx-auto">
+          When a VLA policy fails under multiple co-occurring visual corruptions, which one is actually
+          responsible? Real hardware rollouts, an interactive corruption-sensitivity explorer, and the
+          paper's quantitative results, below.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key idea -->
+  <section class="border-t border-neutral-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+      <h2 class="text-2xl md:text-3xl font-bold">Detection isn't attribution</h2>
+      <div class="mt-6 grid sm:grid-cols-3 gap-6 text-sm">
+        <div class="bg-white rounded-2xl p-5 shadow">
+          <div class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Sensitivity</div>
+          <p class="mt-2 text-neutral-700">76.5% &rarr; 1.1% success under viewpoint change. Aggregate numbers, not per-episode answers.</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow">
+          <div class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Detection</div>
+          <p class="mt-2 text-neutral-700">A classifier flags what's in frame. Presence isn't cause &mdash; corruptions can sit there, harmless.</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow ring-1 ring-neutral-900/10">
+          <div class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Attribution (this work)</div>
+          <p class="mt-2 text-neutral-700">Remove one corruption, hold everything else fixed: how much does failure risk actually drop?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive explorer -->
+  <section id="explorer" class="border-t border-neutral-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+      <h2 class="text-2xl md:text-3xl font-bold">Corruption sensitivity explorer</h2>
+      <p class="mt-3 text-neutral-700 max-w-3xl">
+        Real outcomes from 150 hardware rollouts (&pi;-0.5 on the DROID platform, task
+        &ldquo;put the cube in the bowl,&rdquo; 25 episodes per condition). Select a condition to see its
+        empirical success rate and matched success/failure rollouts.
+      </p>
+
+      <div id="condition-buttons" class="mt-6 flex flex-wrap gap-2"></div>
+
+      <div class="mt-6 grid lg:grid-cols-5 gap-8 items-start">
+        <div class="lg:col-span-3 bg-white rounded-2xl shadow p-4">
+          <div style="height: 320px;">
+            <canvas id="sensitivity-chart"></canvas>
+          </div>
+        </div>
+        <div class="lg:col-span-2">
+          <p id="condition-stat" class="text-neutral-700 leading-relaxed"></p>
+          <p class="mt-4 text-xs text-neutral-400">
+            Success rate is computed directly from the released episode logs (ground-truth task
+            outcome), not a model prediction &mdash; see the Attribution and Results sections below for
+            the model's predicted risk and attribution numbers reported in the paper.
+          </p>
+        </div>
+      </div>
+
+      <div id="condition-videos" class="mt-8 grid sm:grid-cols-2 gap-6"></div>
+    </div>
+  </section>
+
+  <!-- Attribution / counterfactual concept -->
+  <section id="attribution" class="border-t border-neutral-200 bg-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+      <h2 class="text-2xl md:text-3xl font-bold">From detection to attribution</h2>
+      <p class="mt-3 text-neutral-700 max-w-3xl">
+        Because hardware offers no paired clean/corrupted rollout of the exact same state, there is no
+        literal &ldquo;video with the corruption removed&rdquo; to show &mdash; that is precisely the
+        intervention the counterfactual latent is designed to stand in for. Instead, the model reports,
+        from the single observation it actually receives, a risk estimate and a ranked attribution over
+        the present corruptions:
+      </p>
+      <div class="mt-6 grid sm:grid-cols-3 gap-4 max-w-3xl text-sm">
+        <div class="bg-neutral-50 rounded-2xl p-4">
+          <div class="text-xs uppercase tracking-wide text-neutral-400">Presence</div>
+          <div class="mt-1 font-mono">&rho;&#770;<sub>k</sub>(o<sub>t</sub>)</div>
+          <p class="mt-2 text-neutral-600">which corruptions are in the current image</p>
+        </div>
+        <div class="bg-neutral-50 rounded-2xl p-4">
+          <div class="text-xs uppercase tracking-wide text-neutral-400">Risk</div>
+          <div class="mt-1 font-mono">r&#770;(z<sub>c</sub>;z<sub>s</sub>)</div>
+          <p class="mt-2 text-neutral-600">probability the episode ends in failure</p>
+        </div>
+        <div class="bg-neutral-50 rounded-2xl p-4 ring-1 ring-neutral-900/10">
+          <div class="text-xs uppercase tracking-wide text-neutral-500">Attribution</div>
+          <div class="mt-1 font-mono">&Delta;&#770;<sub>k</sub></div>
+          <p class="mt-2 text-neutral-600">how much removing corruption k would lower that risk</p>
+        </div>
+      </div>
+      <p class="mt-6 text-neutral-700 max-w-3xl">
+        On held-out failures with all six simulated corruptions present (K=6), ranking corruptions by
+        &Delta;&#770;<sub>k</sub> correlates with the true solo-failure harm at <strong>r = 0.87</strong>, and the
+        top-ranked corruption matches the true most-harmful one <strong>85%</strong> of the time &mdash;
+        far above a monolithic presence-and-failure model (which collapses to near-zero attribution
+        because it can read corruption directly from the shared features) and a post-hoc VLM baseline.
+        Full numbers are in the Results section below.
+      </p>
+    </div>
+  </section>
+
+  <!-- Rollout + failure predictor -->
+  <section id="rollout" class="border-t border-neutral-200">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+      <h2 class="text-2xl md:text-3xl font-bold">Rollout &amp; failure predictor</h2>
+      <p class="mt-3 text-neutral-700 max-w-3xl">
+        Play both clips: a nominal success alongside a fog-induced failure, each with a live predicted
+        failure-risk readout underneath.
+      </p>
+      <p class="mt-2 text-xs px-3 py-1.5 inline-block rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+        Placeholder values &mdash; the risk curve below is synthetic, to be wired up to the real model output.
+      </p>
+
+      <div class="mt-6 grid sm:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow p-4">
+          <video id="pred-video-nominal" class="w-full rounded-xl bg-black" controls playsinline preload="metadata"
+                 poster="static/images/ep_000000.jpg" src="static/videos/ep_000000.mp4"></video>
+          <div class="mt-3 flex items-center justify-between">
+            <span class="text-sm font-medium text-neutral-700">Nominal &mdash; succeeds</span>
+            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">success</span>
+          </div>
+          <canvas id="pred-chart-nominal" class="mt-3 w-full" height="70"></canvas>
+          <p class="mt-1 text-sm"><span class="text-neutral-500">Predicted failure risk:</span> <span id="pred-value-nominal" class="font-semibold">&mdash;</span></p>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-4">
+          <video id="pred-video-fail" class="w-full rounded-xl bg-black" controls playsinline preload="metadata"
+                 poster="static/images/ep_000053.jpg" src="static/videos/ep_000053.mp4"></video>
+          <div class="mt-3 flex items-center justify-between">
+            <span class="text-sm font-medium text-neutral-700">Fog &mdash; fails</span>
+            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">failure</span>
+          </div>
+          <canvas id="pred-chart-fail" class="mt-3 w-full" height="70"></canvas>
+          <p class="mt-1 text-sm"><span class="text-neutral-500">Predicted failure risk:</span> <span id="pred-value-fail" class="font-semibold">&mdash;</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results tables -->
+  <section id="results" class="border-t border-neutral-200 bg-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+      <h2 class="text-2xl md:text-3xl font-bold">Quantitative results</h2>
+      <p class="mt-2 text-sm text-neutral-500">As reported in the paper.</p>
+
+      <h3 class="mt-8 font-semibold">Corruption presence detection accuracy (%)</h3>
+      <p class="text-sm text-neutral-500">Held-out episodes, single vs. multiple co-occurring corruptions. VLM = GPT-5.5, few-shot post-hoc.</p>
+      <div class="mt-4 bg-white rounded-2xl shadow p-4" style="height:260px;"><canvas id="chart-presence"></canvas></div>
+
+      <h3 class="mt-10 font-semibold">Frame-level failure predictor performance (F1)</h3>
+      <p class="text-sm text-neutral-500">F1 at the per-model best-F1 decision threshold.</p>
+      <div class="mt-4 bg-white rounded-2xl shadow p-4" style="height:260px;"><canvas id="chart-f1"></canvas></div>
+
+      <h3 class="mt-10 font-semibold">Episode-level early-stopping performance</h3>
+      <p class="text-sm text-neutral-500">Flagged the first time predicted risk exceeds the best-F1 threshold for k consecutive frames. &ldquo;Stop@&rdquo; is mean fraction of the episode elapsed at the stop, over correctly caught failures.</p>
+      <div class="mt-3 overflow-x-auto">
+        <table class="paper-table w-full text-sm">
+          <thead><tr><th>k</th><th>Policy</th><th>Single P/R/F1</th><th>Single Stop@</th><th>Multi P/R/F1</th><th>Multi Stop@</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>OpenVLA</td><td>0.74 / 1.00 / 0.85</td><td>1%</td><td>0.83 / 1.00 / 0.90</td><td>1%</td></tr>
+            <tr><td>1</td><td>&pi;-0.5 (LIBERO)</td><td>0.55 / 0.96 / 0.70</td><td>8%</td><td>0.82 / 0.97 / 0.89</td><td>1%</td></tr>
+            <tr><td>3</td><td>OpenVLA</td><td>0.82 / 1.00 / 0.90</td><td>2%</td><td>0.91 / 0.99 / 0.95</td><td>3%</td></tr>
+            <tr><td>3</td><td>&pi;-0.5 (LIBERO)</td><td>0.63 / 0.96 / 0.76</td><td>5%</td><td>0.83 / 0.97 / 0.90</td><td>1%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="mt-10 font-semibold">Corruption attribution by method (K=6, OpenVLA-balanced)</h3>
+      <p class="text-sm text-neutral-500">Corr = correlation of attribution with true solo-failure harm. Presence &amp; Top-1 as percentages. The monolith's correlation (&dagger;) isn't meaningful &mdash; its counterfactual collapses to &asymp;0 for every corruption.</p>
+      <div class="mt-4 grid sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl shadow p-3" style="height:220px;"><canvas id="chart-attr-presence"></canvas></div>
+        <div class="bg-white rounded-2xl shadow p-3" style="height:220px;"><canvas id="chart-attr-corr"></canvas></div>
+        <div class="bg-white rounded-2xl shadow p-3" style="height:220px;"><canvas id="chart-attr-top1"></canvas></div>
+      </div>
+
+      <h3 class="mt-10 font-semibold">Per-term training-objective ablation</h3>
+      <p class="text-sm text-neutral-500">OpenVLA-balanced, K=6, mean over 3 seeds. Each bar removes one loss term from the final configuration. Presence &amp; Failure AUC stay near-ceiling throughout (except presence loss) &mdash; each term protects <em>attribution</em>, not raw detection.</p>
+      <div class="mt-4 bg-white rounded-2xl shadow p-4" style="height:280px;"><canvas id="chart-ablation"></canvas></div>
+    </div>
+  </section>
+
+  <!-- Full video gallery -->
+  <section id="videos" class="border-t border-neutral-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+      <h2 class="text-2xl md:text-3xl font-bold">All curated rollouts</h2>
+      <p class="mt-2 text-neutral-700 max-w-3xl">
+        One success and one failure example per condition, drawn from the same 150-episode hardware
+        dataset used in the explorer above (&pi;-0.5 on DROID, &ldquo;put the cube in the bowl&rdquo;).
+      </p>
+      <div id="all-videos-grid" class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-neutral-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-sm text-neutral-600">
+      <div>Counterfactual Attribution of Vision-Language-Action Model Failures to Visual Corruptions</div>
+    </div>
+  </footer>
+
+  <script>
+    window.SITE_DATA = {
+  "conditions": [
+    { "condition": "nominal", "label": "Nominal", "n": 25, "success": 24, "fail": 1, "success_rate": 0.96, "failure_rate": 0.04 },
+    { "condition": "light", "label": "Low light", "n": 25, "success": 0, "fail": 25, "success_rate": 0.0, "failure_rate": 1.0 },
+    { "condition": "object_add", "label": "Distractor object", "n": 25, "success": 23, "fail": 2, "success_rate": 0.92, "failure_rate": 0.08 },
+    { "condition": "blur", "label": "Gaussian blur", "n": 25, "success": 18, "fail": 7, "success_rate": 0.72, "failure_rate": 0.28 },
+    { "condition": "fog", "label": "Fog", "n": 25, "success": 10, "fail": 15, "success_rate": 0.4, "failure_rate": 0.6 },
+    { "condition": "blur+fog", "label": "Blur + fog (co-occurring)", "n": 25, "success": 2, "fail": 23, "success_rate": 0.08, "failure_rate": 0.92 }
+  ],
+  "curated_episodes": [
+    { "episode": "ep_000000", "condition": "nominal", "outcome": "success", "video": "static/videos/ep_000000.mp4", "poster": "static/images/ep_000000.jpg", "caption": "Nominal — clean external camera view" },
+    { "episode": "ep_000016", "condition": "nominal", "outcome": "fail", "video": "static/videos/ep_000016.mp4", "poster": "static/images/ep_000016.jpg", "caption": "Nominal — rare task-difficulty failure (no corruption present)" },
+    { "episode": "ep_000028", "condition": "blur", "outcome": "success", "video": "static/videos/ep_000028.mp4", "poster": "static/images/ep_000028.jpg", "caption": "Gaussian blur — succeeds" },
+    { "episode": "ep_000029", "condition": "blur", "outcome": "fail", "video": "static/videos/ep_000029.mp4", "poster": "static/images/ep_000029.jpg", "caption": "Gaussian blur — fails" },
+    { "episode": "ep_000054", "condition": "fog", "outcome": "success", "video": "static/videos/ep_000054.mp4", "poster": "static/images/ep_000054.jpg", "caption": "Fog — succeeds" },
+    { "episode": "ep_000053", "condition": "fog", "outcome": "fail", "video": "static/videos/ep_000053.mp4", "poster": "static/images/ep_000053.jpg", "caption": "Fog — fails" },
+    { "episode": "ep_000078", "condition": "object_add", "outcome": "success", "video": "static/videos/ep_000078.mp4", "poster": "static/images/ep_000078.jpg", "caption": "Distractor object — succeeds" },
+    { "episode": "ep_000081", "condition": "object_add", "outcome": "fail", "video": "static/videos/ep_000081.mp4", "poster": "static/images/ep_000081.jpg", "caption": "Distractor object — fails" },
+    { "episode": "ep_000103", "condition": "light", "outcome": "fail", "video": "static/videos/ep_000103.mp4", "poster": "static/images/ep_000103.jpg", "caption": "Low light — fails (typical: 0/25 succeeded)" },
+    { "episode": "ep_000104", "condition": "light", "outcome": "fail", "video": "static/videos/ep_000104.mp4", "poster": "static/images/ep_000104.jpg", "caption": "Low light — fails (typical: 0/25 succeeded)" },
+    { "episode": "ep_000136", "condition": "blur+fog", "outcome": "success", "video": "static/videos/ep_000136.mp4", "poster": "static/images/ep_000136.jpg", "caption": "Blur + fog — rare success (2/25)" },
+    { "episode": "ep_000128", "condition": "blur+fog", "outcome": "fail", "video": "static/videos/ep_000128.mp4", "poster": "static/images/ep_000128.jpg", "caption": "Blur + fog — fails (typical: 23/25 failed)" }
+  ],
+  "meta": {
+    "platform": "Hardware: Franka Emika Panda + DROID, π-0.5 policy",
+    "task": "put the cube in the bowl",
+    "n_total_episodes": 150,
+    "n_per_condition": 25
+  }
+};
+  </script>
+  <script src="static/js/app.js"></script>
+  <script src="static/js/extra.js"></script>
+  <script>
+    // Populate the "all curated rollouts" grid (all 12 curated clips, grouped by condition order)
+    document.addEventListener("DOMContentLoaded", () => {
+      const grid = document.getElementById("all-videos-grid");
+      const order = ["nominal", "light", "object_add", "blur", "fog", "blur+fog"];
+      const byCond = {};
+      window.SITE_DATA.curated_episodes.forEach((e) => {
+        (byCond[e.condition] = byCond[e.condition] || []).push(e);
+      });
+      order.forEach((cond) => {
+        (byCond[cond] || []).forEach((ep) => {
+          const badge = ep.outcome === "success"
+            ? '<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">success</span>'
+            : '<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">failure</span>';
+          const fig = document.createElement("figure");
+          fig.className = "rounded-2xl overflow-hidden bg-neutral-100 shadow";
+          fig.innerHTML = `
+            <video class="w-full aspect-video bg-black" controls playsinline preload="metadata" poster="${ep.poster}">
+              <source src="${ep.video}" type="video/mp4" />
+            </video>
+            <figcaption class="p-3 text-sm text-neutral-600 flex items-center justify-between gap-2">
+              <span>${ep.caption}</span>${badge}
+            </figcaption>`;
+          grid.appendChild(fig);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
