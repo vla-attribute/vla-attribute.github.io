@@ -213,7 +213,7 @@
       <p class="mt-2 text-sm text-neutral-500">As reported in the paper.</p>
 
       <h3 class="mt-8 font-semibold">Detection is the easy part</h3>
-      <p class="text-sm text-neutral-500">Corruption-presence accuracy is high for everyone &mdash; our model reaches 99.4% (OpenVLA) and 99.3% (\(\pi_{0.5}\)), and even the few-shot VLM clears 90%. Presence is easy, but it doesn't tell you what removing a corruption would change (the attribution results below).</p>
+      <p class="text-sm text-neutral-500">Corruption-presence accuracy is relatively trivial. Our model reaches 99.4% (OpenVLA) and 99.3% (\(\pi_{0.5}\)), and even the few-shot VLM clears 90%. Presence is easy, but it doesn't tell you what removing a corruption would change (the attribution results below).</p>
       <div class="mt-4 bg-white rounded-2xl shadow p-4">
         <div style="position:relative; height:240px;">
           <canvas id="chart-presence"></canvas>
@@ -221,8 +221,8 @@
         </div>
       </div>
 
-      <h3 class="mt-10 font-semibold">Corruption attribution by method (OpenVLA-balanced)</h3>
-      <p class="text-sm text-neutral-500">The main result. Removal-effect estimation, on a 0&ndash;1 scale, mean over 5 seeds. <strong>Lower is better</strong> for all three: MAE of the attribution \(\hat\Delta_k\) against the true per-corruption removal effect (single- and multi-corruption conditions), and regret of the top-ranked repair on multi-corruption failures. Oracle (empirical lookup) = 0 by construction.</p>
+      <h3 class="mt-10 font-semibold">Corruption attribution by method (OpenVLA)</h3>
+      <p class="text-sm text-neutral-500">Removal-effect estimation, on a 0&ndash;1 scale, mean over 5 seeds. <strong>Lower is better</strong> for all three: MAE of the attribution \(\hat\Delta_k\) against the true per-corruption removal effect (single- and multi-corruption conditions), and regret of the top-ranked repair on multi-corruption failures. Oracle (empirical lookup) = 0 by construction.</p>
       <div class="mt-4 grid sm:grid-cols-3 gap-4">
         <div class="bg-white rounded-2xl shadow p-3" style="height:230px;"><canvas id="chart-attr-single"></canvas></div>
         <div class="bg-white rounded-2xl shadow p-3" style="height:230px;"><canvas id="chart-attr-multi"></canvas></div>
@@ -237,7 +237,7 @@
       </div>
 
       <h3 class="mt-10 font-semibold">Hardware attribution (\(\pi_{0.5}\)&ndash;DROID, &ldquo;put the cube in the bowl&rdquo;)</h3>
-      <p class="text-sm text-neutral-500">150 real rollouts. Empirical per-corruption removal effect \(\bar\Delta_k\) vs. our held-out estimate \(\hat\Delta_k\) vs. VLM (Sol) responsibility. Our estimate tracks the true effect and correctly finds the distractor object nearly harmless, where the VLM over-blames it.</p>
+      <p class="text-sm text-neutral-500">150 rollouts. Empirical per-corruption removal effect \(\bar\Delta_k\) vs. our held-out estimate \(\hat\Delta_k\) vs. VLM (Sol) responsibility. Our estimate tracks the true effect and correctly finds the distractor object nearly harmless, where the VLM over-blames it.</p>
       <div class="mt-3 overflow-x-auto">
         <table class="paper-table w-full text-sm">
           <thead><tr><th>Corruption</th><th>Empirical \(\bar\Delta_k\)</th><th>Ours \(\hat\Delta_k\)</th><th>VLM score</th></tr></thead>
@@ -251,7 +251,7 @@
       </div>
 
       <h3 class="mt-10 font-semibold">Per-term training-objective ablation</h3>
-      <p class="text-sm text-neutral-500">OpenVLA-balanced, mean over 5 seeds. Each row removes one term from the final configuration. The point is that each term protects a different failure mode of <em>attribution</em>, not raw detection &mdash; several removals barely move MAE but wreck a diagnostic column (corruption leaking back into the scene latent, or absent-corruption blocks not going to zero).</p>
+      <p class="text-sm text-neutral-500">OpenVLA, mean over 5 seeds. Each row removes one term from the final configuration. Each term protects a different failure mode of attribution. Several removals barely move MAE but wreck a diagnostic column (corruption leaking back into the scene latent, or absent-corruption blocks not going to zero).</p>
       <div class="mt-3 overflow-x-auto">
         <table class="paper-table w-full text-sm">
           <thead><tr><th>Configuration</th><th>Presence %</th><th>MAE&nbsp;&darr;</th><th>Regret&nbsp;&darr;</th><th>Absent&nbsp;\(\|z_c^{(k)}\|\)&nbsp;&darr;</th><th>\(z_s\)&nbsp;leak&nbsp;(&rarr;50)</th></tr></thead>
