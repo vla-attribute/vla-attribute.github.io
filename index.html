@@ -3,13 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Counterfactual Attribution of VLA Failures to Visual Corruptions</title>
+  <title>What Would Removing This Corruption Change?</title>
   <meta name="description" content="Attributing vision-language-action policy failures to the specific visual corruptions responsible, via counterfactual latent zeroing." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="MathJax-script" async></script>
   <link rel="stylesheet" href="static/css/index.css" />
 </head>
 <body class="bg-neutral-50 text-neutral-900">
@@ -17,13 +24,13 @@
   <!-- Sticky nav -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-neutral-200">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-      <a href="#top" class="font-semibold">Counterfactual Corruption Attribution</a>
+      <a href="#top" class="font-semibold">VLA Failure Attribution</a>
       <nav class="hidden md:flex gap-5 text-sm">
         <a href="#explorer" class="hover:underline">Explorer</a>
         <a href="#attribution" class="hover:underline">Attribution</a>
+        <a href="#pipeline" class="hover:underline">Pipeline</a>
         <a href="#rollout" class="hover:underline">Rollout</a>
         <a href="#results" class="hover:underline">Results</a>
-        <a href="#videos" class="hover:underline">Videos</a>
       </nav>
     </div>
   </header>
@@ -33,12 +40,12 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <div class="py-12 md:py-20 text-center">
         <h1 class="mt-3 text-3xl sm:text-4xl md:text-5xl font-extrabold max-w-4xl mx-auto leading-tight">
-          Counterfactual Attribution of Vision&#8209;Language&#8209;Action Model Failures to Visual Corruptions
+          What Would Removing This Corruption Change?
         </h1>
+        <p class="mt-2 text-base md:text-lg text-neutral-500 font-medium">Failure Attribution for Vision&#8209;Language&#8209;Action Models</p>
         <p class="mt-4 text-lg text-neutral-600 max-w-3xl mx-auto">
           When a VLA policy fails under multiple co-occurring visual corruptions, which one is actually
-          responsible? Real hardware rollouts, an interactive corruption-sensitivity explorer, and the
-          paper's quantitative results, below.
+          responsible?
         </p>
       </div>
     </div>
@@ -46,16 +53,16 @@
 
   <!-- Key idea -->
   <section class="border-t border-neutral-200">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       <h2 class="text-2xl md:text-3xl font-bold">Detection isn't attribution</h2>
       <div class="mt-6 grid sm:grid-cols-3 gap-6 text-sm">
         <div class="bg-white rounded-2xl p-5 shadow">
           <div class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Sensitivity</div>
-          <p class="mt-2 text-neutral-700">76.5% &rarr; 1.1% success under viewpoint change. Aggregate numbers, not per-episode answers.</p>
+          <p class="mt-2 text-neutral-700">OpenVLA drops from 76.5% to 1.1% success under viewpoint change, indicating the need for analysis of the effect of visual corruptions on VLAs.</p>
         </div>
         <div class="bg-white rounded-2xl p-5 shadow">
           <div class="text-xs font-semibold uppercase tracking-wide text-neutral-400">Detection</div>
-          <p class="mt-2 text-neutral-700">A classifier flags what's in frame. Presence isn't cause &mdash; corruptions can sit there, harmless.</p>
+          <p class="mt-2 text-neutral-700">Corruption presence doesn't imply responsibility. Corruptions can be relatively harmless or affect different policies differently.</p>
         </div>
         <div class="bg-white rounded-2xl p-5 shadow ring-1 ring-neutral-900/10">
           <div class="text-xs font-semibold uppercase tracking-wide text-neutral-500">Attribution (this work)</div>
@@ -68,9 +75,9 @@
   <!-- Interactive explorer -->
   <section id="explorer" class="border-t border-neutral-200">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-      <h2 class="text-2xl md:text-3xl font-bold">Corruption sensitivity explorer</h2>
+      <h2 class="text-2xl md:text-3xl font-bold">Corruption sensitivity</h2>
       <p class="mt-3 text-neutral-700 max-w-3xl">
-        Real outcomes from 150 hardware rollouts (&pi;-0.5 on the DROID platform, task
+        Real outcomes from 150 hardware rollouts (\(\pi_{0.5}\) on the DROID platform, task
         &ldquo;put the cube in the bowl,&rdquo; 25 episodes per condition). Select a condition to see its
         empirical success rate and matched success/failure rollouts.
       </p>
@@ -86,8 +93,7 @@
         <div class="lg:col-span-2">
           <p id="condition-stat" class="text-neutral-700 leading-relaxed"></p>
           <p class="mt-4 text-xs text-neutral-400">
-            Success rate is computed directly from the released episode logs (ground-truth task
-            outcome), not a model prediction &mdash; see the Attribution and Results sections below for
+            Success rate is computed directly from ground-truth task outcome, not model predictions. See the Attribution and Results sections below for
             the model's predicted risk and attribution numbers reported in the paper.
           </p>
         </div>
@@ -99,54 +105,77 @@
 
   <!-- Attribution / counterfactual concept -->
   <section id="attribution" class="border-t border-neutral-200 bg-white">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       <h2 class="text-2xl md:text-3xl font-bold">From detection to attribution</h2>
       <p class="mt-3 text-neutral-700 max-w-3xl">
         Because hardware offers no paired clean/corrupted rollout of the exact same state, there is no
-        literal &ldquo;video with the corruption removed&rdquo; to show &mdash; that is precisely the
-        intervention the counterfactual latent is designed to stand in for. Instead, the model reports,
+        literal &ldquo;video with the corruption removed&rdquo; to show. That is precisely the
+        scenario the latent intervention is designed to stand in for. Instead, the model reports,
         from the single observation it actually receives, a risk estimate and a ranked attribution over
         the present corruptions:
       </p>
       <div class="mt-6 grid sm:grid-cols-3 gap-4 max-w-3xl text-sm">
         <div class="bg-neutral-50 rounded-2xl p-4">
           <div class="text-xs uppercase tracking-wide text-neutral-400">Presence</div>
-          <div class="mt-1 font-mono">&rho;&#770;<sub>k</sub>(o<sub>t</sub>)</div>
+          <div class="mt-1">\(\hat\rho_k(\phi_t,\ell)\)</div>
           <p class="mt-2 text-neutral-600">which corruptions are in the current image</p>
         </div>
         <div class="bg-neutral-50 rounded-2xl p-4">
           <div class="text-xs uppercase tracking-wide text-neutral-400">Risk</div>
-          <div class="mt-1 font-mono">r&#770;(z<sub>c</sub>;z<sub>s</sub>)</div>
+          <div class="mt-1">\(\hat r(z_c; z_s)\)</div>
           <p class="mt-2 text-neutral-600">probability the episode ends in failure</p>
         </div>
         <div class="bg-neutral-50 rounded-2xl p-4 ring-1 ring-neutral-900/10">
           <div class="text-xs uppercase tracking-wide text-neutral-500">Attribution</div>
-          <div class="mt-1 font-mono">&Delta;&#770;<sub>k</sub></div>
-          <p class="mt-2 text-neutral-600">how much removing corruption k would lower that risk</p>
+          <div class="mt-1">\(\hat\Delta_k\)</div>
+          <p class="mt-2 text-neutral-600">how much removing corruption \(k\) would lower the risk</p>
         </div>
       </div>
       <p class="mt-6 text-neutral-700 max-w-3xl">
-        On held-out failures with all six simulated corruptions present (K=6), ranking corruptions by
-        &Delta;&#770;<sub>k</sub> correlates with the true solo-failure harm at <strong>r = 0.87</strong>, and the
-        top-ranked corruption matches the true most-harmful one <strong>85%</strong> of the time &mdash;
-        far above a monolithic presence-and-failure model (which collapses to near-zero attribution
-        because it can read corruption directly from the shared features) and a post-hoc VLM baseline.
+        We evaluate attribution as a <strong>removal-effect estimate</strong>: how well
+        \(\hat\Delta_k\) predicts the true drop in failure rate from removing each corruption.
+        On OpenVLA our estimate reaches an attribution <strong>MAE of 0.095</strong> (single) / 0.101
+        (multi) with <strong>0.011 regret</strong>, and 0.019 / 0.064 / 0.005 on \(\pi_{0.5}\). These numbers are 
+        far below a monolithic presence-and-failure model (MAE 0.42, which collapses because it reads
+        corruption straight from the shared features) and a post-hoc VLM baseline (MAE &asymp;0.21&ndash;0.25).
         Full numbers are in the Results section below.
+      </p>
+    </div>
+  </section>
+
+  <!-- Interactive pipeline / loss explorer -->
+  <section id="pipeline" class="border-t border-neutral-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+      <h2 class="text-2xl md:text-3xl font-bold">Our pipeline</h2>
+      <p class="mt-3 text-neutral-700 max-w-3xl">
+        The model factorizes frozen SigLIP features into a scene latent
+        \(z_s\) and a per-corruption latent
+        \(z_c\) of K=6 blocks. <strong>Click an output</strong>
+        below to trace which components produce it and which training losses make it
+        trustworthy rather than just a detector.
+      </p>
+      <div id="pipeline-flow" class="pl-flow mt-6"></div>
+      <div id="pipeline-detail" class="mt-4 bg-white rounded-2xl shadow p-5"></div>
+      <p class="mt-3 text-xs text-neutral-400">
+        Attribution \(\hat\Delta_k\) is the counterfactual &ldquo;zero block k&rdquo; contrast; the
+        adversary, anchor, INLP and routing losses exist to make that contrast mean
+        &ldquo;remove corruption k&rdquo; rather than &ldquo;perturb a shared feature.&rdquo;
       </p>
     </div>
   </section>
 
   <!-- Rollout + failure predictor -->
   <section id="rollout" class="border-t border-neutral-200">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       <h2 class="text-2xl md:text-3xl font-bold">Rollout &amp; failure predictor</h2>
       <p class="mt-3 text-neutral-700 max-w-3xl">
-        Play both clips: a nominal success alongside a fog-induced failure, each with a live predicted
-        failure-risk readout underneath.
+        Two example rollouts: a nominal success and a fog-induced failure. Under each, the model's
+        per-frame predicted failure risk \(\hat r\) and the live per-corruption attribution
+        \(\hat\Delta_k\) are shown.
       </p>
-      <p class="mt-2 text-xs px-3 py-1.5 inline-block rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-        Placeholder values &mdash; the risk curve below is synthetic, to be wired up to the real model output.
-      </p>
+      <!-- <p class="mt-2 text-xs px-3 py-1.5 inline-block rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        Real model output &mdash; risk and attribution from the hardware checkpoint (5-seed mean), tracked against playback.
+      </p> -->
 
       <div class="mt-6 grid sm:grid-cols-2 gap-6">
         <div class="bg-white rounded-2xl shadow p-4">
@@ -158,16 +187,20 @@
           </div>
           <canvas id="pred-chart-nominal" class="mt-3 w-full" height="70"></canvas>
           <p class="mt-1 text-sm"><span class="text-neutral-500">Predicted failure risk:</span> <span id="pred-value-nominal" class="font-semibold">&mdash;</span></p>
+          <div class="mt-3 text-xs uppercase tracking-wide text-neutral-400 font-semibold">Live attribution \(\hat\Delta_k\)</div>
+          <canvas id="pred-delta-nominal" class="mt-1 w-full" height="104"></canvas>
         </div>
         <div class="bg-white rounded-2xl shadow p-4">
           <video id="pred-video-fail" class="w-full rounded-xl bg-black" controls playsinline preload="metadata"
-                 poster="static/images/ep_000053.jpg" src="static/videos/ep_000053.mp4"></video>
+                 poster="static/images/ep_000076.jpg" src="static/videos/ep_000076.mp4"></video>
           <div class="mt-3 flex items-center justify-between">
             <span class="text-sm font-medium text-neutral-700">Fog &mdash; fails</span>
             <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">failure</span>
           </div>
           <canvas id="pred-chart-fail" class="mt-3 w-full" height="70"></canvas>
           <p class="mt-1 text-sm"><span class="text-neutral-500">Predicted failure risk:</span> <span id="pred-value-fail" class="font-semibold">&mdash;</span></p>
+          <div class="mt-3 text-xs uppercase tracking-wide text-neutral-400 font-semibold">Live attribution \(\hat\Delta_k\)</div>
+          <canvas id="pred-delta-fail" class="mt-1 w-full" height="104"></canvas>
         </div>
       </div>
     </div>
@@ -175,62 +208,64 @@
 
   <!-- Results tables -->
   <section id="results" class="border-t border-neutral-200 bg-white">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       <h2 class="text-2xl md:text-3xl font-bold">Quantitative results</h2>
       <p class="mt-2 text-sm text-neutral-500">As reported in the paper.</p>
 
-      <h3 class="mt-8 font-semibold">Corruption presence detection accuracy (%)</h3>
-      <p class="text-sm text-neutral-500">Held-out episodes, single vs. multiple co-occurring corruptions. VLM = GPT-5.5, few-shot post-hoc.</p>
-      <div class="mt-4 bg-white rounded-2xl shadow p-4" style="height:260px;"><canvas id="chart-presence"></canvas></div>
+      <h3 class="mt-8 font-semibold">Detection is the easy part</h3>
+      <p class="text-sm text-neutral-500">Corruption-presence accuracy is high for everyone &mdash; our model reaches 99.4% (OpenVLA) and 99.3% (\(\pi_{0.5}\)), and even the few-shot VLM clears 90%. Presence is easy, but it doesn't tell you what removing a corruption would change (the attribution results below).</p>
+      <div class="mt-4 bg-white rounded-2xl shadow p-4">
+        <div style="position:relative; height:240px;">
+          <canvas id="chart-presence"></canvas>
+          <div id="chart-presence-xlabels" style="position:absolute; left:0; right:0; bottom:0; pointer-events:none;"></div>
+        </div>
+      </div>
 
-      <h3 class="mt-10 font-semibold">Frame-level failure predictor performance (F1)</h3>
-      <p class="text-sm text-neutral-500">F1 at the per-model best-F1 decision threshold.</p>
-      <div class="mt-4 bg-white rounded-2xl shadow p-4" style="height:260px;"><canvas id="chart-f1"></canvas></div>
+      <h3 class="mt-10 font-semibold">Corruption attribution by method (OpenVLA-balanced)</h3>
+      <p class="text-sm text-neutral-500">The main result. Removal-effect estimation, on a 0&ndash;1 scale, mean over 5 seeds. <strong>Lower is better</strong> for all three: MAE of the attribution \(\hat\Delta_k\) against the true per-corruption removal effect (single- and multi-corruption conditions), and regret of the top-ranked repair on multi-corruption failures. Oracle (empirical lookup) = 0 by construction.</p>
+      <div class="mt-4 grid sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl shadow p-3" style="height:230px;"><canvas id="chart-attr-single"></canvas></div>
+        <div class="bg-white rounded-2xl shadow p-3" style="height:230px;"><canvas id="chart-attr-multi"></canvas></div>
+        <div class="bg-white rounded-2xl shadow p-3" style="height:230px;"><canvas id="chart-attr-regret"></canvas></div>
+      </div>
 
-      <h3 class="mt-10 font-semibold">Episode-level early-stopping performance</h3>
-      <p class="text-sm text-neutral-500">Flagged the first time predicted risk exceeds the best-F1 threshold for k consecutive frames. &ldquo;Stop@&rdquo; is mean fraction of the episode elapsed at the stop, over correctly caught failures.</p>
+      <h3 class="mt-10 font-semibold">Failure recognition during execution (ROC-AUC)</h3>
+      <p class="text-sm text-neutral-500">Single-frame failure prediction on held-out OpenVLA episodes (Ours, SigLIP), at points through the rollout. The oracle assigns test-set empirical failure rates and is flat. On corrupted episodes our risk stays discriminative throughout. On nominal episodes it sharpens as execution reveals the outcome.</p>
+      <div class="mt-4 grid sm:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl shadow p-4" style="height:280px;"><canvas id="chart-failrecog-corrupt"></canvas></div>
+        <div class="bg-white rounded-2xl shadow p-4" style="height:280px;"><canvas id="chart-failrecog-nominal"></canvas></div>
+      </div>
+
+      <h3 class="mt-10 font-semibold">Hardware attribution (\(\pi_{0.5}\)&ndash;DROID, &ldquo;put the cube in the bowl&rdquo;)</h3>
+      <p class="text-sm text-neutral-500">150 real rollouts. Empirical per-corruption removal effect \(\bar\Delta_k\) vs. our held-out estimate \(\hat\Delta_k\) vs. VLM (Sol) responsibility. Our estimate tracks the true effect and correctly finds the distractor object nearly harmless, where the VLM over-blames it.</p>
       <div class="mt-3 overflow-x-auto">
         <table class="paper-table w-full text-sm">
-          <thead><tr><th>k</th><th>Policy</th><th>Single P/R/F1</th><th>Single Stop@</th><th>Multi P/R/F1</th><th>Multi Stop@</th></tr></thead>
+          <thead><tr><th>Corruption</th><th>Empirical \(\bar\Delta_k\)</th><th>Ours \(\hat\Delta_k\)</th><th>VLM score</th></tr></thead>
           <tbody>
-            <tr><td>1</td><td>OpenVLA</td><td>0.74 / 1.00 / 0.85</td><td>1%</td><td>0.83 / 1.00 / 0.90</td><td>1%</td></tr>
-            <tr><td>1</td><td>&pi;-0.5 (LIBERO)</td><td>0.55 / 0.96 / 0.70</td><td>8%</td><td>0.82 / 0.97 / 0.89</td><td>1%</td></tr>
-            <tr><td>3</td><td>OpenVLA</td><td>0.82 / 1.00 / 0.90</td><td>2%</td><td>0.91 / 0.99 / 0.95</td><td>3%</td></tr>
-            <tr><td>3</td><td>&pi;-0.5 (LIBERO)</td><td>0.63 / 0.96 / 0.76</td><td>5%</td><td>0.83 / 0.97 / 0.90</td><td>1%</td></tr>
+            <tr><td>Light (near-dark)</td><td>0.96</td><td>0.96 &plusmn; .01</td><td>1.00</td></tr>
+            <tr><td>Fog</td><td>0.56</td><td>0.56 &plusmn; .05</td><td>0.70</td></tr>
+            <tr><td>Blur</td><td>0.24</td><td>0.27 &plusmn; .03</td><td>0.45</td></tr>
+            <tr><td>Distractor object</td><td>0.04</td><td>0.03 &plusmn; .01</td><td>0.35</td></tr>
           </tbody>
         </table>
       </div>
 
-      <h3 class="mt-10 font-semibold">Corruption attribution by method (K=6, OpenVLA-balanced)</h3>
-      <p class="text-sm text-neutral-500">Corr = correlation of attribution with true solo-failure harm. Presence &amp; Top-1 as percentages. The monolith's correlation (&dagger;) isn't meaningful &mdash; its counterfactual collapses to &asymp;0 for every corruption.</p>
-      <div class="mt-4 grid sm:grid-cols-3 gap-4">
-        <div class="bg-white rounded-2xl shadow p-3" style="height:220px;"><canvas id="chart-attr-presence"></canvas></div>
-        <div class="bg-white rounded-2xl shadow p-3" style="height:220px;"><canvas id="chart-attr-corr"></canvas></div>
-        <div class="bg-white rounded-2xl shadow p-3" style="height:220px;"><canvas id="chart-attr-top1"></canvas></div>
-      </div>
-
       <h3 class="mt-10 font-semibold">Per-term training-objective ablation</h3>
-      <p class="text-sm text-neutral-500">OpenVLA-balanced, K=6, mean over 3 seeds. Each bar removes one loss term from the final configuration. Presence &amp; Failure AUC stay near-ceiling throughout (except presence loss) &mdash; each term protects <em>attribution</em>, not raw detection.</p>
-      <div class="mt-4 bg-white rounded-2xl shadow p-4" style="height:280px;"><canvas id="chart-ablation"></canvas></div>
-    </div>
-  </section>
-
-  <!-- Full video gallery -->
-  <section id="videos" class="border-t border-neutral-200">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-      <h2 class="text-2xl md:text-3xl font-bold">All curated rollouts</h2>
-      <p class="mt-2 text-neutral-700 max-w-3xl">
-        One success and one failure example per condition, drawn from the same 150-episode hardware
-        dataset used in the explorer above (&pi;-0.5 on DROID, &ldquo;put the cube in the bowl&rdquo;).
-      </p>
-      <div id="all-videos-grid" class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      <p class="text-sm text-neutral-500">OpenVLA-balanced, mean over 5 seeds. Each row removes one term from the final configuration. The point is that each term protects a different failure mode of <em>attribution</em>, not raw detection &mdash; several removals barely move MAE but wreck a diagnostic column (corruption leaking back into the scene latent, or absent-corruption blocks not going to zero).</p>
+      <div class="mt-3 overflow-x-auto">
+        <table class="paper-table w-full text-sm">
+          <thead><tr><th>Configuration</th><th>Presence %</th><th>MAE&nbsp;&darr;</th><th>Regret&nbsp;&darr;</th><th>Absent&nbsp;\(\|z_c^{(k)}\|\)&nbsp;&darr;</th><th>\(z_s\)&nbsp;leak&nbsp;(&rarr;50)</th></tr></thead>
+          <tbody id="ablation-tbody"></tbody>
+        </table>
+      </div>
+      <p class="mt-2 text-xs text-neutral-400">&ldquo;Absent \(\|z_c^{(k)}\|\)&rdquo; = norm of a corruption block when that corruption is absent (0 ideal). &ldquo;\(z_s\) leak&rdquo; = AUC of predicting corruption presence from the scene latent alone (50% = no leak).</p>
     </div>
   </section>
 
   <!-- Footer -->
   <footer class="border-t border-neutral-200">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-sm text-neutral-600">
-      <div>Counterfactual Attribution of Vision-Language-Action Model Failures to Visual Corruptions</div>
+      <div>What Would Removing This Corruption Change? &mdash; Failure Attribution for Vision-Language-Action Models</div>
     </div>
   </footer>
 
@@ -250,7 +285,7 @@
     { "episode": "ep_000028", "condition": "blur", "outcome": "success", "video": "static/videos/ep_000028.mp4", "poster": "static/images/ep_000028.jpg", "caption": "Gaussian blur — succeeds" },
     { "episode": "ep_000029", "condition": "blur", "outcome": "fail", "video": "static/videos/ep_000029.mp4", "poster": "static/images/ep_000029.jpg", "caption": "Gaussian blur — fails" },
     { "episode": "ep_000054", "condition": "fog", "outcome": "success", "video": "static/videos/ep_000054.mp4", "poster": "static/images/ep_000054.jpg", "caption": "Fog — succeeds" },
-    { "episode": "ep_000053", "condition": "fog", "outcome": "fail", "video": "static/videos/ep_000053.mp4", "poster": "static/images/ep_000053.jpg", "caption": "Fog — fails" },
+    { "episode": "ep_000076", "condition": "fog", "outcome": "fail", "video": "static/videos/ep_000076.mp4", "poster": "static/images/ep_000076.jpg", "caption": "Fog — fails" },
     { "episode": "ep_000078", "condition": "object_add", "outcome": "success", "video": "static/videos/ep_000078.mp4", "poster": "static/images/ep_000078.jpg", "caption": "Distractor object — succeeds" },
     { "episode": "ep_000081", "condition": "object_add", "outcome": "fail", "video": "static/videos/ep_000081.mp4", "poster": "static/images/ep_000081.jpg", "caption": "Distractor object — fails" },
     { "episode": "ep_000103", "condition": "light", "outcome": "fail", "video": "static/videos/ep_000103.mp4", "poster": "static/images/ep_000103.jpg", "caption": "Low light — fails (typical: 0/25 succeeded)" },
@@ -268,33 +303,6 @@
   </script>
   <script src="static/js/app.js"></script>
   <script src="static/js/extra.js"></script>
-  <script>
-    // Populate the "all curated rollouts" grid (all 12 curated clips, grouped by condition order)
-    document.addEventListener("DOMContentLoaded", () => {
-      const grid = document.getElementById("all-videos-grid");
-      const order = ["nominal", "light", "object_add", "blur", "fog", "blur+fog"];
-      const byCond = {};
-      window.SITE_DATA.curated_episodes.forEach((e) => {
-        (byCond[e.condition] = byCond[e.condition] || []).push(e);
-      });
-      order.forEach((cond) => {
-        (byCond[cond] || []).forEach((ep) => {
-          const badge = ep.outcome === "success"
-            ? '<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">success</span>'
-            : '<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">failure</span>';
-          const fig = document.createElement("figure");
-          fig.className = "rounded-2xl overflow-hidden bg-neutral-100 shadow";
-          fig.innerHTML = `
-            <video class="w-full aspect-video bg-black" controls playsinline preload="metadata" poster="${ep.poster}">
-              <source src="${ep.video}" type="video/mp4" />
-            </video>
-            <figcaption class="p-3 text-sm text-neutral-600 flex items-center justify-between gap-2">
-              <span>${ep.caption}</span>${badge}
-            </figcaption>`;
-          grid.appendChild(fig);
-        });
-      });
-    });
-  </script>
+  <script src="static/js/pipeline.js"></script>
 </body>
 </html>

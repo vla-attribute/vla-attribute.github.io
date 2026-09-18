@@ -2,6 +2,8 @@
   const DATA = window.SITE_DATA;
   const conditions = DATA.conditions; // in fixed order: nominal, light, object_add, blur, fog, blur+fog
   const curated = DATA.curated_episodes;
+  // chart display order: highest empirical success rate first (descending)
+  const chartOrder = conditions.slice().sort((a, b) => b.success_rate - a.success_rate);
 
   const palette = {
     base: "#d4d4d8",
@@ -19,9 +21,9 @@
 
   function renderChart() {
     const ctx = document.getElementById("sensitivity-chart").getContext("2d");
-    const labels = conditions.map((c) => c.label);
-    const rates = conditions.map((c) => Math.round(c.success_rate * 100));
-    const colors = conditions.map((c) =>
+    const labels = chartOrder.map((c) => c.label);
+    const rates = chartOrder.map((c) => Math.round(c.success_rate * 100));
+    const colors = chartOrder.map((c) =>
       c.condition === selectedCondition ? palette.highlight : palette.base
     );
 
@@ -51,14 +53,14 @@
         onClick: (evt, elements) => {
           if (!elements.length) return;
           const idx = elements[0].index;
-          selectCondition(conditions[idx].condition);
+          selectCondition(chartOrder[idx].condition);
         },
         plugins: {
           legend: { display: false },
           tooltip: {
             callbacks: {
               label: (item) => {
-                const c = conditions[item.dataIndex];
+                const c = chartOrder[item.dataIndex];
                 return `${c.success} / ${c.n} episodes succeeded (${item.formattedValue}%)`;
               }
             }
@@ -124,7 +126,7 @@
 
   function initConditionButtons() {
     const bar = document.getElementById("condition-buttons");
-    conditions.forEach((c) => {
+    chartOrder.forEach((c) => {
       const btn = document.createElement("button");
       btn.className =
         "cond-btn px-3 py-1.5 rounded-full border border-neutral-300 text-sm";
