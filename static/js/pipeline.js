@@ -48,7 +48,7 @@
       title: "Attribution \\(\\hat\\Delta_k\\)",
       tag: "which one is to blame",
       formula: "\\(\\hat\\Delta_k = \\mathrm{ReLU}\\!\\big(\\hat r(z_c; z_s) - \\hat r(z_c^{\\setminus k}; z_s)\\big)\\)",
-      plain: "How much removing corruption k, while holding the scene and every other corruption fixed, would lower the failure risk. This counterfactual is the whole point. The losses below are what make it mean &ldquo;remove corruption k&rdquo;.",
+      plain: "Our target quantity: how much removing corruption k, while holding the scene and every other corruption fixed, would lower the failure risk. The losses below are what make it mean &ldquo;remove corruption k&rdquo;.",
       from: ["zc", "head"],
       losses: ["anchor", "consistency", "binAdv", "inlp"],
     },
